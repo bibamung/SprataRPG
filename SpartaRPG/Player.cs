@@ -11,9 +11,11 @@ namespace SpartaRPG
         public string playerName;
         public int playerJob;
 
+        private int playerLv;
         private int playerHp;
         private int playerDex;
         private int playerATK;
+        private int Gold;
 
         public int GetHp() { return playerHp; }
         public void SetHp(int hp) { this.playerHp = hp; }

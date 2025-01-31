@@ -94,7 +94,6 @@ namespace SpartaRPG
                     {
                         isConfirm = true;
                         Console.Clear();
-                        Console.WriteLine(" 다시 한번 아르칸디아에 오신 것을 환영해요~! 이제부터 함께 모험을 즐겨볼까요?");
                     }
                     else if (confirm == "2")
                     {
@@ -109,6 +108,11 @@ namespace SpartaRPG
 
             } while (!isConfirm);
             #endregion
+
+            isConfirm = false;
+
+            Console.WriteLine("다시 한번 아르칸디아에 오신 것을 환영해요~! 이제부터 함께 모험을 즐겨볼까요?");
+            Console.WriteLine("루미에라 마을에서 던전에 들어가기전 활동을 할 수 있습니다.");
 
             Console.WriteLine("");
         }
