@@ -14,9 +14,6 @@ namespace SpartaRPG
     {
         static void Main(string[] args)
         {
-            
-
-
             Console.WriteLine("모험가님 안녕하세요~ 아르칸디아에 오신 것을 환영해요~!");
             Console.WriteLine("모험하기 전에 모험가님 이름을 알려주세요!");
 
@@ -28,7 +25,14 @@ namespace SpartaRPG
 
             Player player = new Player(playerName,playerClass,1);
 
+            Console.Clear();
 
+            Console.WriteLine("루미에라 마을에 오신 모험가님 환영합니다.");
+            while (true)
+            {
+                Console.Clear();
+                GameManager.Town(player);
+            }
         }
     }
 }

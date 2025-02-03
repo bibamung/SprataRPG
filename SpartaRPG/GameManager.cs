@@ -1,8 +1,15 @@
-﻿using SpartaRPG.Class;
+﻿using SpartaRPG.Character;
+using SpartaRPG.Character.Interface;
+using SpartaRPG.Class;
 using SpartaRPG.Class.Interface;
+using SpartaRPG.Item;
+using SpartaRPG.Item.Interface;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -136,5 +143,187 @@ namespace SpartaRPG
             return playerClass;
 
         }
+
+        // 마을 활동
+        public static void Town(Player player)
+        {
+            char choose = ' ';
+            Console.WriteLine("이곳에서 던전으로 들어가기전 활동을 할 수 있습니다.\r\n");
+
+            Console.WriteLine("1. 상태 보기\r\n2. 인벤토리\r\n3. 상점");
+
+            Console.Write("원하시는 행동을 입력해주세요.\n>> ");
+
+            choose = char.Parse(Console.ReadLine());
+            switch (choose)
+            {
+                case '1':
+                    PlayerInfo(player);
+                    break;
+                case '2':
+                    Inventory(player); 
+                    break;
+                case '3':
+                    Shop(player);
+                    break;
+                default:
+                    break;
+            }
+
+        }
+
+
+        //캐릭터 상태보기
+        public static void PlayerInfo(Player player)
+        {
+            Console.Clear();
+            int choose;
+
+            player.DisplayCharacterInfo();
+
+            Console.WriteLine("0. 나가기");
+            Console.Write("원하시는 행동을 입력해주세요.\n>> ");
+            choose = int.Parse(Console.ReadLine());
+
+            switch (choose) 
+            {
+                case 0:
+                    break;
+                default:
+                    PlayerInfo(player);
+                    break;
+            }
+        }
+
+
+        //인벤토리
+        public static void Inventory(Player player)
+        {
+            int count = 1;
+            int choose = 0;
+            Console.Clear();
+
+            if (player.Inventory.Count == 0)
+            {
+                Console.WriteLine("[아이템 목록]\n\n");
+                Console.WriteLine("인벤토리가 비어 있습니다.");
+                return;
+            }
+            Console.WriteLine("[아이템 목록]\n\n");
+
+            foreach (IItem item in player.Inventory)
+            {
+                string type = "", increaseUnit = "";
+                switch (item)
+                {
+                    case Weapon:
+                        type = "무기"; increaseUnit = "공격력 + ";
+                        break;
+                    case Armor:
+                        type = "방어구"; increaseUnit = "방어력 + ";
+                        break;
+                    case Potion:
+                        type = "포션"; increaseUnit = "체력회복 + ";
+                        break;
+                    default:
+                        type = "아이템";
+                        break;
+                }
+                Console.WriteLine($"{count}.\t{(item.isEquip ? "[E]" : "")}{item.Name} | {increaseUnit}{item.IncreaseUnit} | {item.Description}");
+                count++;
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("1. 장착 관리\n2. 나가기\n");
+
+            Console.Write("원하시는 행동을 입력해주세요.\n>> ");
+            choose = int.Parse(Console.ReadLine());
+            switch (choose)
+            {
+                case 1:
+                    EquipmentManage(player);
+                    break;
+                case 2:
+                    break;
+                default:
+                    Inventory(player);
+                    break;
+            }
+
+        }
+
+        //장비 탈부착
+        public static void EquipmentManage(Player player)
+        {
+            int chooseItem = 1;
+            
+            while (chooseItem != 0) {
+                DisplayEquippableItem(player);
+
+                Console.Write("\n0. 나가기\n");
+
+                Console.Write("\n장착 및 해제할 장비를 선택해주십시오.\n>> ");
+                chooseItem = int.Parse(Console.ReadLine());
+
+                if (chooseItem >= 1 && chooseItem <= player.Inventory.Count && player.Inventory[chooseItem - 1] != null)
+                {
+                    
+                    if (player.Inventory[chooseItem - 1] is Weapon && player.Inventory[chooseItem - 1] is IEquippable equippableWeapon)
+                    {
+                        if (player.Inventory[chooseItem - 1].isEquip)
+                            player.EquippedWeapon.Unequip(player);
+                        else
+                            equippableWeapon.Equip(player);
+                    }
+                    else if (player.Inventory[chooseItem - 1] is Armor && player.Inventory[chooseItem - 1] is IEquippable equippableArmor)
+                    {
+                        if (player.Inventory[chooseItem - 1].isEquip)
+                            player.EquippedArmor.Unequip(player);
+                        else
+                        {
+                            equippableArmor.Equip(player);
+                        }
+                    }
+                }
+            }
+
+        }
+
+        //상점
+        public static void Shop(Player plyaer)
+        {
+
+        }
+
+
+        //장착 가능한 아이템 표시
+        public static void DisplayEquippableItem(Player player)
+        {
+            int count = 1;
+            Console.WriteLine("[아이템 목록]\n\n");
+
+            foreach (IItem item in player.Inventory)
+            {
+                if (item is Weapon || item is Armor)
+                {
+                    string type = "", increaseUnit = "";
+                    switch (item)
+                    {
+                        case Weapon:
+                            type = "무기"; increaseUnit = "공격력 + ";
+                            break;
+                        case Armor:
+                            type = "방어구"; increaseUnit = "방어력 + ";
+                            break;
+                        default:
+                            type = "아이템";
+                            break;
+                    }
+                    Console.WriteLine($"{count}.\t{(item.isEquip ? "[E]" : "")}{item.Name} | {increaseUnit}{item.IncreaseUnit} | {item.Description}");
+                    count++;
+                }
+            }
+        }
+
     }
 }

@@ -18,6 +18,7 @@ namespace SpartaRPG.Item
         {
             Armors = new List<Armor>();
             //방어구
+            Armors.Add(new Armor(10000, "빈 슬롯", "", 0, 0));
             Armors.Add(new Armor(10001, "비단 로브", "편하긴하지만...성능은...잘 모르겠네요...", 10, 50));
             Armors.Add(new Armor(10002, "스웨터", "왠지 입으면 뭔가 chill해질 것 같다.", 10, 50));
             Armors.Add(new Armor(10006, "범가죽 흉갑", "호랑이의 가중을 벗겨내 만든 흉갑.북실북실한 털에서 호랑이 기운이 솟는다.", 15, 100));

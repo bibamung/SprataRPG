@@ -61,27 +61,18 @@ namespace SpartaRPG.Character
                     Console.WriteLine("기본 아이템 중 일부를 찾을 수 없습니다.");
                 }
             }
-
-            DisplayCharacterInfo();
         }
 
 
         public void DisplayCharacterInfo()          //캐릭터 정보
         {
             Console.WriteLine();
-            Console.WriteLine("---------------------------------------------");
-            Console.WriteLine($"이름: {Name}");
-            Console.WriteLine($"직업: {Class.ClassName}");
-            Console.WriteLine($"레벨: {Level}");
-            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine($"Lv. {Level:D2}");
+            Console.WriteLine($"{Name} ({Class.ClassName})");
+            Console.WriteLine($"공격력: {ATK}");
+            Console.WriteLine($"방어력: {DEF}");
             Console.WriteLine($"체력: {Hp}");
-            Console.WriteLine($"공격력: {ATK}, 방어력: {DEF}");
-            Console.WriteLine("---------------------------------------------");
-            if (EquippedWeapon != null)
-                Console.WriteLine($"장착된 무기: {EquippedWeapon.Name}");
-            if (EquippedArmor != null)
-                Console.WriteLine($"장착된 방어구: {EquippedArmor.Name}");
-            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine($"Gold: {Gold} G\n");
             Console.WriteLine();
         }
 

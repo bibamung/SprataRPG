@@ -14,7 +14,7 @@ namespace SpartaRPG.Item
         public int ID { get; }
         public string Name { get; }
         public string Description { get; }
-        public int Attack { get; set; }
+        public int IncreaseUnit { get; set; }
         public int PurchasePrice { get; }
         public bool isEquip { get; set; }
         
@@ -23,7 +23,7 @@ namespace SpartaRPG.Item
             ID = id; 
             Name = name; 
             Description = description;
-            Attack = atk; 
+            IncreaseUnit = atk; 
             PurchasePrice = pp;
         }
 
@@ -36,8 +36,9 @@ namespace SpartaRPG.Item
                     player.EquippedWeapon.Unequip(player);
                 }
 
-                player.ATK += Attack;
+                player.ATK += IncreaseUnit;
                 player.EquippedWeapon = this;
+                this.isEquip = true;
                 Console.WriteLine($"{Name}을(를) 장착했습니다.");
             }
         }
@@ -45,8 +46,9 @@ namespace SpartaRPG.Item
         {
             if (character is Player player)
             {
-                player.ATK -= Attack;
+                player.ATK -= IncreaseUnit;
                 player.EquippedWeapon = null;
+                this.isEquip = false;
                 Console.WriteLine($"{Name}을(를) 해제했습니다.");
             }
         }

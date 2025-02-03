@@ -11,6 +11,8 @@ namespace SpartaRPG.Item.Interface
         int ID { get; }
         string Name { get; }
         string Description { get; }
+        int IncreaseUnit { get; set; }
         int PurchasePrice { get; }
+        bool isEquip { get; set; }
     }
 }

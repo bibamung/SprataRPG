@@ -15,15 +15,16 @@ namespace SpartaRPG.Item
         public int ID { get; }
         public string Name { get; }
         public string Description { get; }
-        public int IncreaseHp { get; }
+        public int IncreaseUnit { get; set; }
         public int PurchasePrice { get; }
+        public bool isEquip { get; set; }
         
         public Potion(int id, string name, string description, int hp, int pp)
         {
             ID = id; 
             Name = name; 
             Description = description;
-            IncreaseHp = hp; 
+            IncreaseUnit = hp; 
             PurchasePrice = pp;
         }
 
@@ -31,14 +32,14 @@ namespace SpartaRPG.Item
         {
             if (character.MAXHp > character.Hp)
             {
-                character.Hp += IncreaseHp;
-                Console.WriteLine($"{Name}을(를) 사용하여 체력이 {IncreaseHp}만큼 회복되었습니다.");
+                character.Hp += IncreaseUnit;
+                Console.WriteLine($"{Name}을(를) 사용하여 체력이 {IncreaseUnit}만큼 회복되었습니다.");
 
                 if (character.Class == new CodingWarrior() && this.Name == "Monstar")
                 {
                     character.MAXHp -= 100;
                     character.ATK += 500;
-                    Console.WriteLine($"{Name}을(를) 사용하여 최대 체력이 {IncreaseHp}만큼 감소하였지만, 공격력 영구적으로 500만큼 상승하였습니다");
+                    Console.WriteLine($"{Name}을(를) 사용하여 최대 체력이 {IncreaseUnit}만큼 감소하였지만, 공격력 영구적으로 500만큼 상승하였습니다");
                 }
             }
             else
