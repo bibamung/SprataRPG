@@ -2,6 +2,7 @@
 using SpartaRPG.Character.Interface;
 using SpartaRPG.Class;
 using SpartaRPG.Class.Interface;
+using SpartaRPG.Dungeon;
 using SpartaRPG.Item;
 using SpartaRPG.Item.Interface;
 using System;
@@ -10,13 +11,32 @@ using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace SpartaRPG
 {
+    public enum ePlayerBehavior
+    {
+        PlayerInfo = 1, PlayerInventory = 2, PlayerShop = 3, Purchase = 4, Sale = 5,
+    }
     public static class GameManager
     {
+        public static Player Init()
+        {
+            Console.WriteLine("모험가님 안녕하세요~ 아르칸디아에 오신 것을 환영해요~!");
+            Console.WriteLine("모험하기 전에 모험가님 이름을 알려주세요!");
+            
+            string playerName = PlayerNameCreate();
+
+            Console.WriteLine($"와! 정말 멋진 이름이네요! {playerName}님 반가워요.");
+
+            IClass playerClass = PlayerClass(playerName);
+            Player player = new Player(playerName, playerClass, 1);
+            return player;
+        }
         public static string PlayerNameCreate()
         {
             string playerName;
@@ -147,37 +167,45 @@ namespace SpartaRPG
         // 마을 활동
         public static void Town(Player player)
         {
-            char choose = ' ';
+            int choose;
             Console.WriteLine("이곳에서 던전으로 들어가기전 활동을 할 수 있습니다.\r\n");
 
-            Console.WriteLine("1. 상태 보기\r\n2. 인벤토리\r\n3. 상점");
+            Console.WriteLine("1. 상태 보기\n2. 인벤토리\n3. 상점\n4. 던전 입장\n5. 여관");
 
             Console.Write("원하시는 행동을 입력해주세요.\n>> ");
 
-            choose = char.Parse(Console.ReadLine());
+            choose = int.Parse(Console.ReadLine());
             switch (choose)
             {
-                case '1':
+                case 1:
                     PlayerInfo(player);
                     break;
-                case '2':
-                    Inventory(player); 
+                case (int)ePlayerBehavior.PlayerInventory:
+                    Inventory(player, (int)ePlayerBehavior.PlayerInventory); 
                     break;
-                case '3':
-                    Shop(player);
+                case (int)ePlayerBehavior.PlayerShop:
+                    Shop(player, (int)ePlayerBehavior.PlayerShop);
+                    break;
+                case 4:
+                    DungeonEnter(player);
+                    break;
+                case 5:
+                    Rest(player);
                     break;
                 default:
+                    Console.WriteLine("잘못 입력하셨습니다.");
                     break;
             }
 
         }
-
 
         //캐릭터 상태보기
         public static void PlayerInfo(Player player)
         {
             Console.Clear();
             int choose;
+
+            Console.WriteLine("\n상태보기\n캐릭터의 정보가 표시됩니다.");
 
             player.DisplayCharacterInfo();
 
@@ -190,16 +218,15 @@ namespace SpartaRPG
                 case 0:
                     break;
                 default:
+                    Console.WriteLine("잘못 입력하셨습니다.");
                     PlayerInfo(player);
                     break;
             }
         }
 
-
         //인벤토리
-        public static void Inventory(Player player)
+        public static void Inventory(Player player, int playerBehavior)
         {
-            int count = 1;
             int choose = 0;
             Console.Clear();
 
@@ -211,30 +238,10 @@ namespace SpartaRPG
             }
             Console.WriteLine("[아이템 목록]\n\n");
 
-            foreach (IItem item in player.Inventory)
-            {
-                string type = "", increaseUnit = "";
-                switch (item)
-                {
-                    case Weapon:
-                        type = "무기"; increaseUnit = "공격력 + ";
-                        break;
-                    case Armor:
-                        type = "방어구"; increaseUnit = "방어력 + ";
-                        break;
-                    case Potion:
-                        type = "포션"; increaseUnit = "체력회복 + ";
-                        break;
-                    default:
-                        type = "아이템";
-                        break;
-                }
-                Console.WriteLine($"{count}.\t{(item.isEquip ? "[E]" : "")}{item.Name} | {increaseUnit}{item.IncreaseUnit} | {item.Description}");
-                count++;
-            }
+            DisplayItem(player.Inventory, playerBehavior);
 
             Console.WriteLine();
-            Console.WriteLine("1. 장착 관리\n2. 나가기\n");
+            Console.WriteLine("1. 장착 관리\n0. 나가기\n");
 
             Console.Write("원하시는 행동을 입력해주세요.\n>> ");
             choose = int.Parse(Console.ReadLine());
@@ -243,10 +250,11 @@ namespace SpartaRPG
                 case 1:
                     EquipmentManage(player);
                     break;
-                case 2:
+                case 0:
                     break;
                 default:
-                    Inventory(player);
+                    Console.WriteLine("잘못 입력하셨습니다.");
+                    Inventory(player, playerBehavior);
                     break;
             }
 
@@ -255,9 +263,11 @@ namespace SpartaRPG
         //장비 탈부착
         public static void EquipmentManage(Player player)
         {
+            Console.Clear();
             int chooseItem = 1;
             
             while (chooseItem != 0) {
+                Console.WriteLine("[아이템 목록]\n\n");
                 DisplayEquippableItem(player);
 
                 Console.Write("\n0. 나가기\n");
@@ -271,32 +281,332 @@ namespace SpartaRPG
                     if (player.Inventory[chooseItem - 1] is Weapon && player.Inventory[chooseItem - 1] is IEquippable equippableWeapon)
                     {
                         if (player.Inventory[chooseItem - 1].isEquip)
+                        {
+                            Console.Clear();
                             player.EquippedWeapon.Unequip(player);
+                        }
                         else
+                        {
+                            Console.Clear();
                             equippableWeapon.Equip(player);
+                        }
                     }
                     else if (player.Inventory[chooseItem - 1] is Armor && player.Inventory[chooseItem - 1] is IEquippable equippableArmor)
                     {
                         if (player.Inventory[chooseItem - 1].isEquip)
+                        {
+                            Console.Clear();
                             player.EquippedArmor.Unequip(player);
+                        }
                         else
                         {
+                            Console.Clear();
                             equippableArmor.Equip(player);
                         }
                     }
+                }
+                else
+                {
+                    Console.Clear();
+                    Console.WriteLine("잘못 입력하셨습니다.");
                 }
             }
 
         }
 
-        //상점
-        public static void Shop(Player plyaer)
+        //상점(구매, 판매)
+        public static void Shop(Player player, int playerBehavior)
+        {
+            Console.Clear();
+            int choose;
+
+            List<IItem> saleItem = new List<IItem>();
+            saleItem.Add(ItemList.GetItemByID(10001));
+            saleItem.Add(ItemList.GetItemByID(10002));
+            saleItem.Add(ItemList.GetItemByID(10003));
+            saleItem.Add(ItemList.GetItemByID(10004));
+            saleItem.Add(ItemList.GetItemByID(10005));
+            saleItem.Add(ItemList.GetItemByID(10006));
+            saleItem.Add(ItemList.GetItemByID(10007));
+            saleItem.Add(ItemList.GetItemByID(20001));
+            saleItem.Add(ItemList.GetItemByID(20002));
+            saleItem.Add(ItemList.GetItemByID(20003));
+            saleItem.Add(ItemList.GetItemByID(20004));
+            saleItem.Add(ItemList.GetItemByID(20005));
+            saleItem.Add(ItemList.GetItemByID(20006));
+            saleItem.Add(ItemList.GetItemByID(20007));
+            saleItem.Add(ItemList.GetItemByID(30001));
+            saleItem.Add(ItemList.GetItemByID(30002));
+            saleItem.Add(ItemList.GetItemByID(30003));
+            saleItem.Add(ItemList.GetItemByID(30004));
+
+            Console.WriteLine("상점\r\n필요한 아이템을 얻을 수 있는 상점입니다.");
+            Console.WriteLine($"[보유 골드]\n{player.Gold} G\n");
+
+            Console.WriteLine("[아이템 목록]\n");
+
+            DisplayItem(saleItem, playerBehavior);
+
+            Console.Write("\n1. 아이템 구매\n2. 아이템 판매\n0. 나가기\n");
+
+            Console.Write("\n원하시는 행동을 입력해주세요.\n>> ");
+            choose = int.Parse(Console.ReadLine());
+            switch (choose)
+            {
+                case 0:
+                    break;
+                case 1:
+                    BuyItem(saleItem, player);
+                    break;
+                case 2:
+                    SaleItem(player);
+                    break;
+                default:
+                    Console.WriteLine("잘못 입력하셨습니다.");
+                    Shop(player, playerBehavior);
+                    break;
+            }
+
+        }
+        public static void BuyItem(List<IItem> saleItem, Player player)
+        {
+            Console.Clear();
+            int choose = 1;
+            while (true)
+            {
+                Console.WriteLine("상점\r\n필요한 아이템을 얻을 수 있는 상점입니다.");
+                Console.WriteLine($"[보유 골드]\n{player.Gold} G\n");
+
+                Console.WriteLine("[아이템 목록]\n");
+
+                DisplayItem(saleItem, (int)ePlayerBehavior.Purchase);
+
+                Console.Write("\n0. 나가기\n");
+
+                Console.Write("\n구매할 아이템을 입력해주세요.\n>> ");
+                choose = int.Parse(Console.ReadLine());
+                
+                if (choose == 0)
+                {
+                    break;
+                }
+                if (choose > 0 && choose <= saleItem.Count)
+                {
+                    if (choose > 0 && player.Gold > saleItem[choose - 1].PurchasePrice)
+                    {
+
+                        if (player.Inventory.Contains(saleItem[choose - 1]))
+                        {
+                            Console.Clear();
+                            Console.WriteLine("이미 구매한 아이템입니다.");
+                        }
+                        else
+                        {
+                            Console.Clear();
+                            player.Inventory.Add(saleItem[choose - 1]);
+                            player.Gold -= saleItem[choose - 1].PurchasePrice;
+                            Console.WriteLine($"{saleItem[choose - 1].Name}아이템 구매를 완료했습니다\n");
+                        }
+                    }
+                    else
+                    {
+                        Console.Clear();
+                        Console.WriteLine("Gold 가 부족합니다.");
+                    }
+                }
+                else if (choose > saleItem.Count)
+                {
+                    Console.Clear();
+                    Console.WriteLine("잘못 입력하셨습니다.");
+                }
+
+            }
+            
+        }
+        public static void SaleItem(Player player)
+        {
+            Console.Clear();
+            int choose = 1, chooseItem = 0;
+            while (true)
+            {
+                Console.WriteLine("상점\r\n필요한 아이템을 얻을 수 있는 상점입니다.\n");
+                Console.WriteLine($"[보유 골드]\n{player.Gold} G\n");
+
+                Console.WriteLine("[아이템 목록]\n");
+
+                DisplayItem(player.Inventory, (int)ePlayerBehavior.Sale);
+
+                Console.Write("\n0. 나가기\n");
+
+                Console.Write("\n판매할 아이템을 입력해주세요.\n>> ");
+                chooseItem = int.Parse(Console.ReadLine());
+                if (chooseItem == 0)
+                {
+                    break;
+                }
+                if (chooseItem > 0 && chooseItem <= player.Inventory.Count)
+                {
+                    if (player.Inventory.Contains(player.Inventory[chooseItem - 1]))
+                    {
+
+                        Console.Write("\n1. 네\n2. 아니요\n");
+
+                        Console.Write("\n정말로 판매하시겠습니까?\n>> ");
+                        choose = int.Parse(Console.ReadLine());
+
+                        if (choose == 1)
+                        {
+                            if (player.Inventory[chooseItem - 1] is Weapon && player.Inventory[chooseItem - 1].isEquip)
+                            {
+                                player.EquippedWeapon.Unequip(player);
+                            }
+                            else if (player.Inventory[chooseItem - 1] is Armor && player.Inventory[chooseItem - 1].isEquip)
+                            {
+                                player.EquippedArmor.Unequip(player);
+                            }
+                            player.Gold += (int)Math.Round((player.Inventory[chooseItem - 1].PurchasePrice) * 0.5f);
+                            player.Inventory.RemoveAt(chooseItem - 1);
+                        }
+                        else if (choose == 2)
+                        {
+                            break;
+                        }
+                        Console.Clear();
+                    }
+                    else
+                    {
+                        player.Inventory.Add(player.Inventory[choose - 1]);
+                        player.Gold -= player.Inventory[choose - 1].PurchasePrice;
+                        Console.WriteLine($"{player.Inventory[choose - 1].Name}아이템 구매를 완료했습니다\n");
+                        Console.Clear();
+                    }
+                }
+                else if (choose > player.Inventory.Count)
+                {
+                    Console.Clear();
+                    Console.WriteLine("잘못 입력하셨습니다.");
+                }
+
+            }
+
+        }
+
+
+        //던전
+        public static void DungeonEnter(Player player)
+        {
+            int choose, chooseDungeon;
+            Console.WriteLine("던전에 입장 하시겠습니까?");
+            Console.WriteLine("1. 네\n2. 아니요");
+            Console.Write("원하시는 행동을 선택해주세요.\n>> ");
+            choose = int.Parse(Console.ReadLine());
+
+            if (choose == 1)
+            {
+                Console.Clear();
+                Random random = new Random();
+                Console.WriteLine("던전입장\n이곳에서 던전으로 들어가기전 활동을 할 수 있습니다.\n");
+                Console.WriteLine("1. 쉬운 던전\t| 방어력 5 이상 권장\n2. 일반 던전\t| 방어력 11 이상 권장\n3. 어려운 던전\t| 방어력 17 이상 권장\n0. 나가기");
+
+                Console.Write("원하시는 던전을 선택해주세요.\n>> ");
+                chooseDungeon = int.Parse(Console.ReadLine());
+
+
+                DungeonSelect dungeon = new DungeonSelect(chooseDungeon);
+                if (player.DEF >= dungeon.RecommendDEF)
+                {
+                    Console.Clear();
+                    Console.WriteLine($"던전 클리어\n축하합니다!!\n{dungeon.DungeonLv}을 클리어 하였습니다.\n");
+                    Console.Write($"체력 {player.Hp} → ");//클리어 전 체력
+                    player.Hp -=
+                        random.Next(20 - (player.DEF - dungeon.RecommendDEF), 35 - (player.DEF - dungeon.RecommendDEF));
+                    Console.WriteLine($"{player.Hp}");    //클리어 후 체력
+
+                    Console.Write($"Gold {player.Gold} → ");//클리어 전 골드
+                    player.Gold +=
+                        (int)(dungeon.ClearGold * Math.Round(1.1 + (random.NextDouble() * 0.1), 2));
+                    Console.WriteLine($"{player.Gold}");    //클리어 후 골드
+
+                    Console.Write("계속 진행하시려면 Enter를 눌러주세요...");
+                    Console.ReadLine();
+                }
+                else
+                {
+                    if (random.Next(0, 10) >= 6)         //40% 확률로 성공 (반대로 적용함, 기존: 40% 확률로 실패)
+                    {
+                        Console.Clear();
+                        Console.WriteLine($"던전 클리어\n축하합니다!!\n아슬아슬하게 {dungeon.DungeonLv}을 클리어 하였습니다.\n");
+                        Console.Write($"체력 {player.Hp} → ");//클리어 전 체력
+                        player.Hp -= 35;
+                        Console.WriteLine($"{player.Hp}");    //클리어 후 체력
+
+                        Console.Write($"Gold {player.Gold} → ");//클리어 전 골드
+                        player.Gold += dungeon.ClearGold;
+                        Console.WriteLine($"{player.Gold}");    //클리어 후 골드
+                        Console.Write("계속 진행하시려면 Enter를 눌러주세요...");
+                        Console.ReadLine();
+                    }
+                    else
+                    {
+                        Console.Clear();
+                        Console.WriteLine($"던전 실패\n강해져서 돌아와라...ㅋㅋ\n{dungeon.DungeonLv}을 실패하였습니다.\n");
+                        Console.Write($"체력 {player.Hp} → ");
+                        player.Hp /= 2;
+                        Console.WriteLine($"{player.Hp}");
+
+                        Console.Write($"Gold {player.Gold} → ");
+                        Console.WriteLine($"{player.Gold}");
+                        Console.Write("계속 진행하시려면 Enter를 눌러주세요...");
+                        Console.ReadLine();
+                    }
+                }
+            }
+            
+
+        }
+
+        //휴식기능
+        public static void Rest(Player player)
+        {
+            
+            Console.WriteLine($"휴식하기\n500 G 를 내면 체력을 회복할 수 있습니다. (보유 골드 : {player.Gold} G)\n");
+            Console.WriteLine("1. 휴식하기\n0. 나가기\n");
+
+            Console.Write("원하시는 행동을 입력해주세요.\n>> ");
+
+            int choose = int.Parse(Console.ReadLine());
+
+            switch (choose)
+            {
+                case 0:
+                    break;
+                case 1:
+
+                    if (player.Hp >= player.MAXHp) { Console.WriteLine("현재 체력이 가득차 있습니다."); break; }
+                    
+                    else
+                    {
+                        player.Gold -= 500;
+                        player.Hp += 100;
+                        if (player.Hp >= player.MAXHp) {  player.Hp = player.MAXHp; }
+                    }
+                    Console.WriteLine($"모험가님의 체력이 100만큼 회복되었습니다! ^^7\n현재 체력 >> {player.Hp}");
+                    Console.Write("계속 진행하시려면 Enter를 눌러주세요...");
+                    Console.ReadLine();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        //강화
+        public static void EnforceEquipment(Player player)
         {
 
         }
 
 
-        //장착 가능한 아이템 표시
+        //아이템 출력
         public static void DisplayEquippableItem(Player player)
         {
             int count = 1;
@@ -319,11 +629,57 @@ namespace SpartaRPG
                             type = "아이템";
                             break;
                     }
-                    Console.WriteLine($"{count}.\t{(item.isEquip ? "[E]" : "")}{item.Name} | {increaseUnit}{item.IncreaseUnit} | {item.Description}");
+                    Console.WriteLine($"- {count} {(item.isEquip ? "[E]" : "")}{item.Name} | {increaseUnit}{item.IncreaseUnit} | {item.Description}");
                     count++;
                 }
             }
         }
-
+        public static void DisplayItem(List<IItem> items, int playerBehavior)
+        {
+            int count = 1;
+            foreach (IItem item in items)
+            {
+                string type = "", increaseUnit = "";
+                switch (item)
+                {
+                    case Weapon:
+                        type = "무기"; increaseUnit = "공격력 + ";
+                        break;
+                    case Armor:
+                        type = "방어구"; increaseUnit = "방어력 + ";
+                        break;
+                    case Potion:
+                        type = "포션"; increaseUnit = "체력회복 + ";
+                        break;
+                    default:
+                        type = "아이템";
+                        break;
+                }
+                switch (playerBehavior)
+                {
+                    case (int)ePlayerBehavior.PlayerInventory:
+                        Console.WriteLine($"- {(item.isEquip ? "[E]" : "")}{item.Name} | {increaseUnit}{item.IncreaseUnit} | {item.Description}");
+                        break;
+                    case (int)ePlayerBehavior.PlayerShop:
+                        Console.WriteLine($"- {item.Name} | {increaseUnit}{item.IncreaseUnit} | {item.Description}");
+                        break;
+                    case (int)ePlayerBehavior.Purchase:
+                        Console.WriteLine($"- {count} {item.Name} | {increaseUnit}{item.IncreaseUnit} | {item.Description} | {item.PurchasePrice} G");
+                        break;
+                    case (int)ePlayerBehavior.Sale:
+                        Console.WriteLine($"- {count} {(item.isEquip ? "[E]" : "")}{item.Name} | {increaseUnit}{item.IncreaseUnit} | {item.Description} | {((int)Math.Round((item.PurchasePrice) * 0.5f))} G");
+                        break;
+                    default:
+                        break;
+                }
+                /*if (playerBehavior == (int)ePlayerBehavior.PlayerInventory)
+                    Console.WriteLine($"- {(item.isEquip ? "[E]" : "")}{item.Name} | {increaseUnit}{item.IncreaseUnit} | {item.Description}");
+                else if (playerBehavior == (int)ePlayerBehavior.PlayerShop)
+                    Console.WriteLine($"- {item.Name} | {increaseUnit}{item.IncreaseUnit} | {item.Description}");
+*/
+                
+                count++;
+            }
+        }
     }
 }

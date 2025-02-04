@@ -22,12 +22,13 @@ namespace SpartaRPG.Character
         
         public int ATK { get; set; }            //공격력
         public int DEF { get; set; }            //방어력
+        public int Gold { get; set; }           //보유골드
+        public int DungeonClearCount {  get; set; }     //던전 클리어 횟수
         
 
         public IEquippable EquippedWeapon { get; set; }     //착용무기
         public IEquippable EquippedArmor { get; set; }      //착용방어구
 
-        public int Gold { get; set; }           //보유골드
 
         public List<IItem> Inventory { get; set; }      //인벤토리
 
@@ -40,7 +41,8 @@ namespace SpartaRPG.Character
             ATK = 0; // 초기화
             DEF = 0;  // 초기화
 
-            Gold = 100;
+            Gold = 1500;
+            DungeonClearCount = 0;
 
             Inventory = new List<IItem>();
 

@@ -35,7 +35,6 @@ namespace SpartaRPG.Item
                 {
                     player.EquippedArmor.Unequip(player);
                 }
-                Console.WriteLine(this.Name);
                 player.DEF += IncreaseUnit;
                 player.EquippedArmor = this;
                 this.isEquip = true;

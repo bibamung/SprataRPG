@@ -12,10 +12,11 @@ namespace SpartaRPG.Class
 {
     public class Warrior : IClass
     {
-        public string ClassName => "전사";
+        public string ClassName { get; set; }
         public List<IItem> DefaultItems { get; }
         public Warrior()
         {
+            ClassName = "전사";
             DefaultItems = new List<IItem>
             {
                 ItemList.GetItemByName("비단 로브"),

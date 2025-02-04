@@ -18,13 +18,12 @@ namespace SpartaRPG.Item
         {
             Armors = new List<Armor>();
             //방어구
-            Armors.Add(new Armor(10000, "빈 슬롯", "", 0, 0));
             Armors.Add(new Armor(10001, "비단 로브", "편하긴하지만...성능은...잘 모르겠네요...", 10, 50));
             Armors.Add(new Armor(10002, "스웨터", "왠지 입으면 뭔가 chill해질 것 같다.", 10, 50));
-            Armors.Add(new Armor(10006, "범가죽 흉갑", "호랑이의 가중을 벗겨내 만든 흉갑.북실북실한 털에서 호랑이 기운이 솟는다.", 15, 100));
-            Armors.Add(new Armor(10003, "미스릴 체인메일", "고대 드워프들이 만들어낸 경량 갑옷으로, 희귀한 금속인 미스릴로 특별 제작한 방어구", 25, 150));
-            Armors.Add(new Armor(10004, "드래곤 스케일 아머", "전설적인 드래곤의 비늘을 가공하여 만든 갑옷", 50, 200));
-            Armors.Add(new Armor(10005, "신념의 업화 상의", "어? 어디서 많이 본 장비인데? 옆동네 게임 건가? 성능은 좋아 보인다", 100, 500));
+            Armors.Add(new Armor(10003, "범가죽 흉갑", "호랑이의 가중을 벗겨내 만든 흉갑.북실북실한 털에서 호랑이 기운이 솟는다.", 15, 100));
+            Armors.Add(new Armor(10004, "미스릴 체인메일", "고대 드워프들이 만들어낸 경량 갑옷으로, 희귀한 금속인 미스릴로 특별 제작한 방어구", 25, 150));
+            Armors.Add(new Armor(10005, "드래곤 스케일 아머", "전설적인 드래곤의 비늘을 가공하여 만든 갑옷", 50, 200));
+            Armors.Add(new Armor(10006, "신념의 업화 상의", "어? 어디서 많이 본 장비인데? 옆동네 게임 건가? 성능은 좋아 보인다", 100, 500));
             Armors.Add(new Armor(10007, "후드티", "성능이 좋아보이진 않지만, 누군가 입으면... 무적이 된다는 전설의 방어구", 10, 700));
 
             //무기
@@ -43,7 +42,7 @@ namespace SpartaRPG.Item
             Potions.Add(new Potion(30001,"회복약","맛있진 않다...",20,25));
             Potions.Add(new Potion(30002,"고급 회복약","회복약 보단 성능이 개선됬다. 맛도 조금은 맛있어진 것 같다.",40,50));
             Potions.Add(new Potion(30003,"정령의 가호 회복약","피가 복사가 된다구!",70,75));
-            Potions.Add(new Potion(30003, "Monstar", "에너지 드링크!", 100, 100));
+            Potions.Add(new Potion(30004, "Monstar", "에너지 드링크!", 100, 100));
 
             Items = new List<IItem>();
             Items.AddRange(Armors);
