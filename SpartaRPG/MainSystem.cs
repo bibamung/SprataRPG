@@ -12,20 +12,26 @@ using Newtonsoft.Json;
 namespace SpartaRPG
 {
     internal class MainSystem
-    {
-        public static Player player;
+    {        
         static void Main(string[] args)
         {
-
-            player = GameManager.Init();
-            
-            Console.Clear();
-
-            Console.WriteLine("루미에라 마을에 오신 모험가님 환영합니다.");
-            while (true)
+            bool isOver = false;
+            while (!isOver)
             {
+                Player player;
                 Console.Clear();
-                GameManager.Town(player);
+                Console.WriteLine("\r\n _____                      _          ______ ______  _____ \r\n/  ___|                    | |         | ___ \\| ___ \\|  __ \\\r\n\\ `--.  _ __    __ _  _ __ | |_   __ _ | |_/ /| |_/ /| |  \\/\r\n `--. \\| '_ \\  / _` || '__|| __| / _` ||    / |  __/ | | __ \r\n/\\__/ /| |_) || (_| || |   | |_ | (_| || |\\ \\ | |    | |_\\ \\\r\n\\____/ | .__/  \\__,_||_|    \\__| \\__,_|\\_| \\_|\\_|     \\____/\r\n       | |                                                  \r\n       |_|                                                  \r\n");
+                player = GameManager.Init();
+
+                Console.Clear();
+
+                Console.WriteLine("루미에라 마을에 오신 모험가님 환영합니다.");
+                while (player.Hp >= 0)
+                {
+                    Console.Clear();
+                    GameManager.Town(player);
+                }
+                isOver = GameManager.GameOver();
             }
         }
     }

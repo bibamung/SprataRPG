@@ -16,6 +16,7 @@ namespace SpartaRPG.Item
         public string Description { get; }
         public int IncreaseUnit { get; set; }
         public int PurchasePrice { get; }
+        public int Quantity {  get; set; }
         public bool isEquip { get; set; }
         
         public Armor(int id, string name, string description, int def, int pp)
@@ -35,7 +36,7 @@ namespace SpartaRPG.Item
                 {
                     player.EquippedArmor.Unequip(player);
                 }
-                player.DEF += IncreaseUnit;
+                player.DEF += (float)IncreaseUnit;
                 player.EquippedArmor = this;
                 this.isEquip = true;
                 Console.WriteLine($"{Name}을(를) 장착했습니다.");
@@ -45,7 +46,7 @@ namespace SpartaRPG.Item
         {
             if (character is Player player)
             {
-                player.DEF -= IncreaseUnit;
+                player.DEF -= (float)IncreaseUnit;
                 player.EquippedArmor = null;
                 this.isEquip = false;
                 Console.WriteLine($"{Name}을(를) 해제했습니다.");

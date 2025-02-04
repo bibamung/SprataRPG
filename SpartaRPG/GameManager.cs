@@ -15,22 +15,24 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace SpartaRPG
 {
     public enum ePlayerBehavior
     {
-        PlayerInfo = 1, PlayerInventory = 2, PlayerShop = 3, Purchase = 4, Sale = 5,
+        PlayerInfo = 1, PlayerInventory = 2, PlayerShop = 3, Purchase = 4, Sale = 5, Use = 6
     }
     public static class GameManager
     {
         public static Player Init()
         {
+            Console.SetCursorPosition(0,10);
             Console.WriteLine("모험가님 안녕하세요~ 아르칸디아에 오신 것을 환영해요~!");
             Console.WriteLine("모험하기 전에 모험가님 이름을 알려주세요!");
             
             string playerName = PlayerNameCreate();
-
+            
             Console.WriteLine($"와! 정말 멋진 이름이네요! {playerName}님 반가워요.");
 
             IClass playerClass = PlayerClass(playerName);
@@ -44,7 +46,7 @@ namespace SpartaRPG
             char confirm;
             do
             {
-                Console.SetCursorPosition(0, 3);
+                Console.SetCursorPosition(0, 13);
                 Console.Write("사용할 이름을 입력해주세요. \n>>");
                 playerName = Console.ReadLine();
 
@@ -170,7 +172,7 @@ namespace SpartaRPG
             int choose;
             Console.WriteLine("이곳에서 던전으로 들어가기전 활동을 할 수 있습니다.\r\n");
 
-            Console.WriteLine("1. 상태 보기\n2. 인벤토리\n3. 상점\n4. 던전 입장\n5. 여관");
+            Console.WriteLine("1. 상태 보기\n2. 인벤토리\n3. 상점\n4. 던전 입장\n5. 여관\n0. 종료");
 
             Console.Write("원하시는 행동을 입력해주세요.\n>> ");
 
@@ -191,6 +193,9 @@ namespace SpartaRPG
                     break;
                 case 5:
                     Rest(player);
+                    break;
+                case 0:
+                    Environment.Exit(0);
                     break;
                 default:
                     Console.WriteLine("잘못 입력하셨습니다.");
@@ -213,7 +218,7 @@ namespace SpartaRPG
             Console.Write("원하시는 행동을 입력해주세요.\n>> ");
             choose = int.Parse(Console.ReadLine());
 
-            switch (choose) 
+            switch (choose)
             {
                 case 0:
                     break;
@@ -233,7 +238,10 @@ namespace SpartaRPG
             if (player.Inventory.Count == 0)
             {
                 Console.WriteLine("[아이템 목록]\n\n");
-                Console.WriteLine("인벤토리가 비어 있습니다.");
+                Console.WriteLine("인벤토리가 비어 있습니다.\n");
+
+                Console.Write("돌아가시려면 진행하시려면 Enter를 눌러주세요...");
+                Console.ReadLine();
                 return;
             }
             Console.WriteLine("[아이템 목록]\n\n");
@@ -248,7 +256,7 @@ namespace SpartaRPG
             switch (choose)
             {
                 case 1:
-                    EquipmentManage(player);
+                    EquipmentUseManage(player);
                     break;
                 case 0:
                     break;
@@ -261,20 +269,19 @@ namespace SpartaRPG
         }
 
         //장비 탈부착
-        public static void EquipmentManage(Player player)
+        public static void EquipmentUseManage(Player player)
         {
             Console.Clear();
             int chooseItem = 1;
             
             while (chooseItem != 0) {
                 Console.WriteLine("[아이템 목록]\n\n");
-                DisplayEquippableItem(player);
+                DisplayItem(player.Inventory, (int)ePlayerBehavior.Use);
 
                 Console.Write("\n0. 나가기\n");
 
-                Console.Write("\n장착 및 해제할 장비를 선택해주십시오.\n>> ");
+                Console.Write("\n장착 및 해제 or 사용할 아이템을 선택해주십시오.\n>> ");
                 chooseItem = int.Parse(Console.ReadLine());
-
                 if (chooseItem >= 1 && chooseItem <= player.Inventory.Count && player.Inventory[chooseItem - 1] != null)
                 {
                     
@@ -303,6 +310,24 @@ namespace SpartaRPG
                             Console.Clear();
                             equippableArmor.Equip(player);
                         }
+                    }
+                    else if (player.Inventory[chooseItem - 1] is Potion)
+                    {
+                        if (player.Hp >= player.MAXHp) { Console.WriteLine("현재 체력이 가득차 있습니다."); break; }
+
+                        else
+                        {
+                            player.Inventory[chooseItem - 1].Quantity--;
+                            player.Hp += player.Inventory[chooseItem - 1].IncreaseUnit;
+                            if (player.Hp >= player.MAXHp) { player.Hp = player.MAXHp; }
+                        }
+                        Console.WriteLine($"모험가님의 체력이 {player.Inventory[chooseItem-1].IncreaseUnit}만큼 회복되었습니다!\n현재 체력 >> {player.Hp}");
+                        if (player.Inventory[chooseItem - 1].Quantity == 0)
+                        {
+                            player.Inventory.RemoveAt(chooseItem - 1);
+                        }
+                        Console.Write("계속 진행하시려면 Enter를 눌러주세요...");
+                        Console.ReadLine();
                     }
                 }
                 else
@@ -395,17 +420,19 @@ namespace SpartaRPG
                     if (choose > 0 && player.Gold > saleItem[choose - 1].PurchasePrice)
                     {
 
-                        if (player.Inventory.Contains(saleItem[choose - 1]))
+                        if (player.Inventory.Contains(saleItem[choose - 1]) && saleItem[choose - 1] is Weapon && saleItem[choose - 1] is Armor)
                         {
                             Console.Clear();
                             Console.WriteLine("이미 구매한 아이템입니다.");
                         }
+                        else if (player.Inventory.Contains(saleItem[choose - 1]))
+                        {
+                            player.Inventory.Find(i => i.Name == saleItem[choose - 1].Name).Quantity++;
+                        }
                         else
                         {
-                            Console.Clear();
                             player.Inventory.Add(saleItem[choose - 1]);
-                            player.Gold -= saleItem[choose - 1].PurchasePrice;
-                            Console.WriteLine($"{saleItem[choose - 1].Name}아이템 구매를 완료했습니다\n");
+                            player.Inventory.Last().Quantity++;
                         }
                     }
                     else
@@ -413,7 +440,12 @@ namespace SpartaRPG
                         Console.Clear();
                         Console.WriteLine("Gold 가 부족합니다.");
                     }
+                    player.Gold -= saleItem[choose - 1].PurchasePrice;
+                    Console.WriteLine($"{saleItem[choose - 1].Name}아이템 구매를 완료했습니다\n");
                 }
+                
+
+                
                 else if (choose > saleItem.Count)
                 {
                     Console.Clear();
@@ -459,13 +491,25 @@ namespace SpartaRPG
                             if (player.Inventory[chooseItem - 1] is Weapon && player.Inventory[chooseItem - 1].isEquip)
                             {
                                 player.EquippedWeapon.Unequip(player);
+                                player.Inventory.RemoveAt(chooseItem - 1);
+                                player.Gold += (int)Math.Round((player.Inventory[chooseItem - 1].PurchasePrice) * 0.5f);
                             }
                             else if (player.Inventory[chooseItem - 1] is Armor && player.Inventory[chooseItem - 1].isEquip)
                             {
                                 player.EquippedArmor.Unequip(player);
+                                player.Inventory.RemoveAt(chooseItem - 1);
+                                player.Gold += (int)Math.Round((player.Inventory[chooseItem - 1].PurchasePrice) * 0.5f);
                             }
-                            player.Gold += (int)Math.Round((player.Inventory[chooseItem - 1].PurchasePrice) * 0.5f);
-                            player.Inventory.RemoveAt(chooseItem - 1);
+                            else if(player.Inventory[chooseItem - 1] is Potion)
+                            {
+                                player.Inventory[chooseItem - 1].Quantity--;
+                                player.Gold += (int)Math.Round((player.Inventory[chooseItem - 1].PurchasePrice) * 0.5f);
+                                if (player.Inventory[chooseItem - 1].Quantity == 0)
+                                {
+                                    player.Inventory.RemoveAt(chooseItem - 1);
+                                }
+                            }
+                            
                         }
                         else if (choose == 2)
                         {
@@ -491,7 +535,6 @@ namespace SpartaRPG
 
         }
 
-
         //던전
         public static void DungeonEnter(Player player)
         {
@@ -515,20 +558,36 @@ namespace SpartaRPG
                 DungeonSelect dungeon = new DungeonSelect(chooseDungeon);
                 if (player.DEF >= dungeon.RecommendDEF)
                 {
+                    float curHp = player.Hp;
                     Console.Clear();
-                    Console.WriteLine($"던전 클리어\n축하합니다!!\n{dungeon.DungeonLv}을 클리어 하였습니다.\n");
-                    Console.Write($"체력 {player.Hp} → ");//클리어 전 체력
-                    player.Hp -=
-                        random.Next(20 - (player.DEF - dungeon.RecommendDEF), 35 - (player.DEF - dungeon.RecommendDEF));
-                    Console.WriteLine($"{player.Hp}");    //클리어 후 체력
+                    curHp -=
+                        random.Next(20 - ((int)player.DEF - dungeon.RecommendDEF), 35 - ((int)player.DEF - dungeon.RecommendDEF));
+                    if (curHp <= 0) 
+                    {
+                        Console.Clear();
+                        Console.WriteLine($"던전 실패\n강해져서 돌아와라...ㅋㅋ\n{dungeon.DungeonLv}을 실패하였습니다.\n");
+                        
+                        /*Console.Write("계속 진행하시려면 Enter를 눌러주세요...");
+                        Console.ReadLine();*/
+                    }
+                    else
+                    {
+                        Console.WriteLine($"던전 클리어\n축하합니다!!\n{dungeon.DungeonLv}을 클리어 하였습니다.\n");
+                        Console.Write($"체력 {player.Hp} → ");//클리어 전 체력
+                        player.Hp = curHp;
 
-                    Console.Write($"Gold {player.Gold} → ");//클리어 전 골드
-                    player.Gold +=
-                        (int)(dungeon.ClearGold * Math.Round(1.1 + (random.NextDouble() * 0.1), 2));
-                    Console.WriteLine($"{player.Gold}");    //클리어 후 골드
+                        Console.WriteLine($"{player.Hp}");    //클리어 후 체력
 
-                    Console.Write("계속 진행하시려면 Enter를 눌러주세요...");
-                    Console.ReadLine();
+                        Console.Write($"Gold {player.Gold} → ");//클리어 전 골드
+                        player.Gold +=
+                            (int)(dungeon.ClearGold * Math.Round(1.1 + (random.NextDouble() * 0.1), 2));
+                        Console.WriteLine($"{player.Gold}");    //클리어 후 골드
+
+                        player.DungeonClearCount++;
+
+                        Console.Write("계속 진행하시려면 Enter를 눌러주세요...");
+                        Console.ReadLine();
+                    }
                 }
                 else
                 {
@@ -543,6 +602,8 @@ namespace SpartaRPG
                         Console.Write($"Gold {player.Gold} → ");//클리어 전 골드
                         player.Gold += dungeon.ClearGold;
                         Console.WriteLine($"{player.Gold}");    //클리어 후 골드
+                        player.DungeonClearCount++;
+
                         Console.Write("계속 진행하시려면 Enter를 눌러주세요...");
                         Console.ReadLine();
                     }
@@ -599,12 +660,28 @@ namespace SpartaRPG
             }
         }
 
-        //강화
-        public static void EnforceEquipment(Player player)
+        //게임 종료
+        public static bool GameOver()
         {
+            Console.WriteLine("\r\n__   __ _____  _   _  ______  _____  _____ ______ \r\n\\ \\ / /|  _  || | | | |  _  \\|_   _||  ___||  _  \\\r\n \\ V / | | | || | | | | | | |  | |  | |__  | | | |\r\n  \\ /  | | | || | | | | | | |  | |  |  __| | | | |\r\n  | |  \\ \\_/ /| |_| | | |/ /  _| |_ | |___ | |/ / \r\n  \\_/   \\___/  \\___/  |___/   \\___/ \\____/ |___/  \r\n                                                  \r\n                                                  \r\n");
 
+            Console.WriteLine("그는...유명한 모험가였습니다...\r\n");
+
+            Console.WriteLine("1. 환생하기\n0. 끝내기");
+
+            Console.Write("원하시는 행동을 입력해주세요.\n>> ");
+            int choose = int.Parse(Console.ReadLine());
+
+            if (choose == 1)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+            
         }
-
 
         //아이템 출력
         public static void DisplayEquippableItem(Player player)
@@ -658,7 +735,14 @@ namespace SpartaRPG
                 switch (playerBehavior)
                 {
                     case (int)ePlayerBehavior.PlayerInventory:
-                        Console.WriteLine($"- {(item.isEquip ? "[E]" : "")}{item.Name} | {increaseUnit}{item.IncreaseUnit} | {item.Description}");
+                        if (item  is Potion)
+                        {
+                            Console.WriteLine($"- {item.Name} | {increaseUnit}{item.IncreaseUnit} | {item.Quantity}개 | {item.Description}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"- {(item.isEquip ? "[E]" : "")}{item.Name} | {increaseUnit}{item.IncreaseUnit} | {item.Description}");
+                        }
                         break;
                     case (int)ePlayerBehavior.PlayerShop:
                         Console.WriteLine($"- {item.Name} | {increaseUnit}{item.IncreaseUnit} | {item.Description}");
@@ -667,7 +751,24 @@ namespace SpartaRPG
                         Console.WriteLine($"- {count} {item.Name} | {increaseUnit}{item.IncreaseUnit} | {item.Description} | {item.PurchasePrice} G");
                         break;
                     case (int)ePlayerBehavior.Sale:
-                        Console.WriteLine($"- {count} {(item.isEquip ? "[E]" : "")}{item.Name} | {increaseUnit}{item.IncreaseUnit} | {item.Description} | {((int)Math.Round((item.PurchasePrice) * 0.5f))} G");
+                        if (item is Potion)
+                        {
+                            Console.WriteLine($"- {count} {item.Name} | {increaseUnit}{item.IncreaseUnit} | {item.Quantity}개 | {item.Description}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"- {count} {(item.isEquip ? "[E]" : "")}{item.Name} | {increaseUnit}{item.IncreaseUnit} | {item.Description}");
+                        }
+                        break;
+                    case (int)ePlayerBehavior.Use:
+                        if (item is Potion)
+                        {
+                            Console.WriteLine($"- {count} {item.Name} | {increaseUnit}{item.IncreaseUnit} | {item.Quantity}개 | {item.Description}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"- {count} {(item.isEquip ? "[E]" : "")}{item.Name} | {increaseUnit}{item.IncreaseUnit} | {item.Description}");
+                        }
                         break;
                     default:
                         break;
@@ -681,5 +782,8 @@ namespace SpartaRPG
                 count++;
             }
         }
+       
+
+
     }
 }

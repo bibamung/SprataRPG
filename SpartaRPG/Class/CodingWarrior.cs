@@ -19,8 +19,7 @@ namespace SpartaRPG.Class
             ClassName = "코딩전사";
             DefaultItems = new List<IItem>
             {
-                ItemList.GetItemByName("스웨터"),
-                ItemList.GetItemByName("키보드")
+                
             };
         }
         public void ApplyClassStats(ICharacter character)

@@ -20,8 +20,8 @@ namespace SpartaRPG.Character
         public int Level { get; set; }          //레벨
 
         
-        public int ATK { get; set; }            //공격력
-        public int DEF { get; set; }            //방어력
+        public float ATK { get; set; }            //공격력
+        public float DEF { get; set; }            //방어력
         public int Gold { get; set; }           //보유골드
         public int DungeonClearCount {  get; set; }     //던전 클리어 횟수
         
@@ -71,8 +71,24 @@ namespace SpartaRPG.Character
             Console.WriteLine();
             Console.WriteLine($"Lv. {Level:D2}");
             Console.WriteLine($"{Name} ({Class.ClassName})");
-            Console.WriteLine($"공격력: {ATK}");
-            Console.WriteLine($"방어력: {DEF}");
+            if (EquippedWeapon!=null)
+            {
+                Console.WriteLine($"공격력: {ATK} (+{EquippedWeapon.IncreaseUnit})");
+
+            }
+            else
+            {
+                Console.WriteLine($"공격력: {ATK}");
+            }
+            if (EquippedArmor != null)
+            {
+                Console.WriteLine($"방어력: {DEF} (+{EquippedArmor.IncreaseUnit})");
+
+            }
+            else
+            {
+                Console.WriteLine($"방어력: {DEF}");
+            }
             Console.WriteLine($"체력: {Hp}");
             Console.WriteLine($"Gold: {Gold} G\n");
             Console.WriteLine();

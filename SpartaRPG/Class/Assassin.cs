@@ -19,8 +19,7 @@ namespace SpartaRPG.Class
             ClassName = "암살자";
             DefaultItems = new List<IItem>
             {
-                ItemList.GetItemByName("비단 로브"),
-                ItemList.GetItemByName("나무 몽둥이")
+                
             };
         }
         public void ApplyClassStats(ICharacter character)

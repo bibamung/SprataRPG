@@ -19,8 +19,8 @@ namespace SpartaRPG.Character.Interface
         
 
         //
-        int ATK { get; set; }
-        int DEF { get; set; }
+        float ATK { get; set; }
+        float DEF { get; set; }
         //
 
 
