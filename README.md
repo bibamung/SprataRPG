@@ -1,8 +1,8 @@
 # Sparta Text RPG
 ### 내일배움캠프 2주차
 
-```
-# C# (with. Visual Studio 2022)
+```csharp
+//C# (with. Visual Studio 2022)
 ```
 
 - 기능 구현 완료 목록:
